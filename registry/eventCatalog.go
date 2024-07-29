@@ -67,7 +67,18 @@ func (eventCatalog *EventCatalog) Add(event service.Event, service *service.Serv
 	if !exists {
 		list = []EventEntry{entry}
 	} else {
-		list = append(list.([]EventEntry), entry)
+		// Try to find the nodeid in the list
+		found := false
+		for _, x := range list.([]EventEntry) {
+			if x.event.ServiceName() == event.ServiceName() && x.targetNodeID == entry.targetNodeID {
+				found = true
+				break
+			}
+		}
+		if !found {
+			list = append(list.([]EventEntry), entry)
+		}
+
 	}
 	eventCatalog.events.Store(name, list)
 }

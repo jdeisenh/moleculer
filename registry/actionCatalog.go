@@ -123,7 +123,17 @@ func (actionCatalog *ActionCatalog) Add(action service.Action, serv *service.Ser
 	if !exists {
 		list = []ActionEntry{entry}
 	} else {
-		list = append(list.([]ActionEntry), entry)
+		// Try to find the nodeid in the list
+		found := false
+		for _, x := range list.([]ActionEntry) {
+			if x.targetNodeID == entry.targetNodeID {
+				found = true
+				break
+			}
+		}
+		if !found {
+			list = append(list.([]ActionEntry), entry)
+		}
 	}
 	actionCatalog.actions.Store(name, list)
 }
