@@ -263,7 +263,7 @@ func (node *Node) GetID() string {
 	return node.id
 }
 func (node *Node) IsExpired(timeout time.Duration) bool {
-	if node.IsLocal() || !node.IsAvailable() {
+	if node.IsLocal() {
 		return false
 	}
 	diff := time.Now().Unix() - node.lastHeartBeatTime
