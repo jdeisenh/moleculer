@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"strings"
 
 	"sort"
 	"strconv"
@@ -61,9 +62,9 @@ func (serializer JSONSerializer) ReaderToPayload(r io.Reader) moleculer.Payload 
 	return payload
 }
 
-//MapToString serialize a map into a string
-//This implementation uses the standard library json pkg and it needs to be compared with others for performance.
-//Performance: it should be experimented with multiple implementations. This is just he initial one.
+// MapToString serialize a map into a string
+// This implementation uses the standard library json pkg and it needs to be compared with others for performance.
+// Performance: it should be experimented with multiple implementations. This is just he initial one.
 func (serializer JSONSerializer) MapToString(m interface{}) string {
 	r, err := json.Marshal(m)
 	if err != nil {
@@ -74,8 +75,8 @@ func (serializer JSONSerializer) MapToString(m interface{}) string {
 	return s
 }
 
-//StringToMap deserialize a string (json) into map
-//Same implementation and performance notes as MapToString
+// StringToMap deserialize a string (json) into map
+// Same implementation and performance notes as MapToString
 func (serializer JSONSerializer) StringToMap(j string) map[string]interface{} {
 	m := map[string]interface{}{}
 	err := json.Unmarshal([]byte(j), &m)
@@ -260,10 +261,10 @@ func (jp JSONPayload) Get(path string, defaultValue ...interface{}) moleculer.Pa
 		return payload.New(defaultValue[0])
 	}
 	message := JSONPayload{result, jp.logger}
-	return message
+	return message.Clone()
 }
 
-//Only return a payload containing only the field specified
+// Only return a payload containing only the field specified
 func (p JSONPayload) Only(path string) moleculer.Payload {
 	result := p.result.Get(path)
 	if result.Exists() {
@@ -637,4 +638,14 @@ func (payload JSONPayload) Map() map[string]moleculer.Payload {
 		return newMap
 	}
 	return nil
+}
+
+// Clone will call strings.Clone on both strings. This is to avoid
+// a memory leak because refernces to substrings cannot be garbage collected
+func (jp JSONPayload) Clone() JSONPayload {
+
+	r := jp.result
+	r.Str = strings.Clone(r.Str)
+	r.Raw = strings.Clone(r.Raw)
+	return JSONPayload{r, jp.logger}
 }
